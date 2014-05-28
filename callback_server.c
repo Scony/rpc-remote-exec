@@ -11,9 +11,7 @@ cout_1_svc(params *argp, struct svc_req *rqstp)
 {
 	static int  result;
 
-	/*
-	 * insert server code here
-	 */
+	printf("cout_1_svc\n");
 
 	return &result;
 }
@@ -23,9 +21,7 @@ cerr_1_svc(params *argp, struct svc_req *rqstp)
 {
 	static int  result;
 
-	/*
-	 * insert server code here
-	 */
+	printf("cerr_1_svc\n");
 
 	return &result;
 }
@@ -35,9 +31,7 @@ ret_1_svc(int *argp, struct svc_req *rqstp)
 {
 	static int  result;
 
-	/*
-	 * insert server code here
-	 */
+	printf("ret_1_svc\n");
 
 	return &result;
 }

@@ -13,6 +13,8 @@ remote_exec_1(char *host)
 	CLIENT *clnt;
 	int  *result_1;
 	rexec_params  rexec_1_arg;
+	rexec_1_arg.name = "xxx";
+	rexec_1_arg.first = NULL;
 	int  *result_2;
 	cin_params  cin_1_arg;
 

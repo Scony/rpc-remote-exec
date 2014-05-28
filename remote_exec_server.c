@@ -11,9 +11,7 @@ rexec_1_svc(rexec_params *argp, struct svc_req *rqstp)
 {
 	static int  result;
 
-	/*
-	 * insert server code here
-	 */
+	printf("rexec_1_svc\n");
 
 	return &result;
 }
@@ -23,9 +21,7 @@ cin_1_svc(cin_params *argp, struct svc_req *rqstp)
 {
 	static int  result;
 
-	/*
-	 * insert server code here
-	 */
+	printf("cin_1_svc\n");
 
 	return &result;
 }

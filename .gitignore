@@ -1,0 +1,6 @@
+*~
+*.o
+callback_client
+callback_server
+remote_exec_client
+remote_exec_server

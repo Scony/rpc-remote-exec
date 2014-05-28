@@ -6,10 +6,13 @@
 
 #include "remote_exec.h"
 
+int link[2];
+
 int * rexec_1_svc(rexec_params * argp, struct svc_req * rqstp)
 {
   static int result = 0;
 
+  wait();
   printf("rexec_1_svc: %s\n",argp->name);
   arg * p = argp->first;
   while(p != NULL)
@@ -17,6 +20,10 @@ int * rexec_1_svc(rexec_params * argp, struct svc_req * rqstp)
       printf("argv: %s\n",p->val);
       p = p->next;
     }
+
+  /* fork */
+  /* child call: cbcli host command args */
+  /* make pipe to feed input */
 
   return &result;
 }

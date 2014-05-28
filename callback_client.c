@@ -7,53 +7,95 @@
 #include "callback.h"
 
 
-void
-callback_1(char *host)
+void cout_callback(char * host, char * data)
 {
-	CLIENT *clnt;
-	int  *result_1;
-	params  cout_1_arg;
-	int  *result_2;
-	params  cerr_1_arg;
-	int  *result_3;
-	int  ret_1_arg;
+  static int seq = -1;
+  CLIENT * clnt;
+  int * result;
+  params cout_1_arg;
 
-#ifndef	DEBUG
-	clnt = clnt_create (host, CALLBACK, V1, "udp");
-	if (clnt == NULL) {
-		clnt_pcreateerror (host);
-		exit (1);
-	}
-#endif	/* DEBUG */
+  cout_1_arg.seq = ++seq;
+  cout_1_arg.data = data;
 
-	result_1 = cout_1(&cout_1_arg, clnt);
-	if (result_1 == (int *) NULL) {
-		clnt_perror (clnt, "call failed");
-	}
-	result_2 = cerr_1(&cerr_1_arg, clnt);
-	if (result_2 == (int *) NULL) {
-		clnt_perror (clnt, "call failed");
-	}
-	result_3 = ret_1(&ret_1_arg, clnt);
-	if (result_3 == (int *) NULL) {
-		clnt_perror (clnt, "call failed");
-	}
-#ifndef	DEBUG
-	clnt_destroy (clnt);
-#endif	 /* DEBUG */
+  clnt = clnt_create(host,CALLBACK,V1,"udp");
+  if(clnt == NULL)
+    {
+      clnt_pcreateerror(host);
+      exit(1);
+    }
+
+  result = cout_1(&cout_1_arg, clnt);
+  if(result == (int *)NULL)
+    {
+      clnt_perror(clnt,"call failed");
+    }
+
+  clnt_destroy (clnt);
+}
+
+void cerr_callback(char * host, char * data)
+{
+  static int seq = -1;
+  CLIENT * clnt;
+  int * result;
+  params cerr_1_arg;
+
+  cerr_1_arg.seq = ++seq;
+  cerr_1_arg.data = data;
+
+  clnt = clnt_create(host,CALLBACK,V1,"udp");
+  if(clnt == NULL)
+    {
+      clnt_pcreateerror(host);
+      exit(1);
+    }
+
+  result = cerr_1(&cerr_1_arg, clnt);
+  if(result == (int *)NULL)
+    {
+      clnt_perror(clnt,"call failed");
+    }
+
+  clnt_destroy (clnt);
+}
+
+void result_callback(char * host, int rslt)
+{
+  CLIENT * clnt;
+  int * result;
+  int ret_1_arg;
+
+  ret_1_arg = rslt;
+
+  clnt = clnt_create(host,CALLBACK,V1,"udp");
+  if(clnt == NULL)
+    {
+      clnt_pcreateerror(host);
+      exit(1);
+    }
+
+  result = ret_1(&ret_1_arg, clnt);
+  if(result == (int *)NULL)
+    {
+      clnt_perror(clnt,"call failed");
+    }
+
+  clnt_destroy (clnt);
 }
 
 
-int
-main (int argc, char *argv[])
+int main(int argc, char * argv[])
 {
-	char *host;
+  char * host = argv[1];
 
-	if (argc < 2) {
-		printf ("usage: %s server_host\n", argv[0]);
-		exit (1);
-	}
-	host = argv[1];
-	callback_1 (host);
-exit (0);
+  if(argc < 3)
+    {
+      printf("usage: %s callback_server_host command [arguments]\n", argv[0]);
+      exit(1);
+    }
+
+  cout_callback(argv[1],"cout test !\n");
+  cerr_callback(argv[1],"test cerr.\n");
+  result_callback(argv[1],5);
+  return 0;
 }

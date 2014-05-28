@@ -6,32 +6,29 @@
 
 #include "callback.h"
 
-int *
-cout_1_svc(params *argp, struct svc_req *rqstp)
+int * cout_1_svc(params * argp, struct svc_req * rqstp)
 {
-	static int  result;
+  static int result = 0;
 
-	write(1,"cout_1_svc\n",11);
+  write(1,argp->data,strlen(argp->data));
 	
-	return &result;
+  return &result;
 }
 
-int *
-cerr_1_svc(params *argp, struct svc_req *rqstp)
+int * cerr_1_svc(params * argp, struct svc_req * rqstp)
 {
-	static int  result;
+  static int result = 0;
 
-	write(2,"cerr_1_svc\n",11);
+  write(2,argp->data,strlen(argp->data));
 
-	return &result;
+  return &result;
 }
 
-int *
-ret_1_svc(int *argp, struct svc_req *rqstp)
+int * ret_1_svc(int * argp, struct svc_req * rqstp)
 {
-	static int  result;
+  static int result = 0;
 
-	write(1,"ret_1_svc\n",10);
+  exit(*argp);
 
-	return &result;
+  return &result;
 }

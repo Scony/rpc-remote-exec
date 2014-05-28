@@ -137,7 +137,12 @@ int main(int argc, char *argv[])
 	    }
 	}
 
-      wait();
+      int s;
+      wait(&s);
+      if(WIFEXITED(s))
+	printf("Child's exit code %d\n", WEXITSTATUS(s));
+      else
+	printf("Child did not terminate with exit\n");
     }
   else				/* child */
     {

@@ -11,8 +11,8 @@ cout_1_svc(params *argp, struct svc_req *rqstp)
 {
 	static int  result;
 
-	printf("cout_1_svc\n");
-
+	write(1,"cout_1_svc\n",11);
+	
 	return &result;
 }
 
@@ -21,7 +21,7 @@ cerr_1_svc(params *argp, struct svc_req *rqstp)
 {
 	static int  result;
 
-	printf("cerr_1_svc\n");
+	write(2,"cerr_1_svc\n",11);
 
 	return &result;
 }
@@ -31,7 +31,7 @@ ret_1_svc(int *argp, struct svc_req *rqstp)
 {
 	static int  result;
 
-	printf("ret_1_svc\n");
+	write(1,"ret_1_svc\n",10);
 
 	return &result;
 }

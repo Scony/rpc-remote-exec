@@ -9,19 +9,19 @@
 int *
 rexec_1_svc(rexec_params *argp, struct svc_req *rqstp)
 {
-	static int  result;
+  static int  result;
 
-	printf("rexec_1_svc\n");
+  printf("rexec_1_svc\n");
 
-	return &result;
+  return &result;
 }
 
 int *
 cin_1_svc(cin_params *argp, struct svc_req *rqstp)
 {
-	static int  result;
+  static int  result;
 
-	printf("cin_1_svc\n");
+  printf("cin_1_svc\n");
 
-	return &result;
+  return &result;
 }

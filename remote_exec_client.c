@@ -5,51 +5,110 @@
  */
 
 #include "remote_exec.h"
+#include <poll.h>
 
 
 void
 remote_exec_1(char *host)
 {
-	CLIENT *clnt;
-	int  *result_1;
-	rexec_params  rexec_1_arg;
-	rexec_1_arg.name = "xxx";
-	rexec_1_arg.first = NULL;
-	int  *result_2;
-	cin_params  cin_1_arg;
+  CLIENT *clnt;
+  int  *result_1;
+  rexec_params  rexec_1_arg;
+  rexec_1_arg.name = "xxx";
+  rexec_1_arg.first = NULL;
+  int  *result_2;
+  cin_params  cin_1_arg;
 
 #ifndef	DEBUG
-	clnt = clnt_create (host, REMOTE_EXEC, V1, "udp");
-	if (clnt == NULL) {
-		clnt_pcreateerror (host);
-		exit (1);
-	}
+  clnt = clnt_create (host, REMOTE_EXEC, V1, "udp");
+  if (clnt == NULL) {
+    clnt_pcreateerror (host);
+    exit (1);
+  }
 #endif	/* DEBUG */
 
-	result_1 = rexec_1(&rexec_1_arg, clnt);
-	if (result_1 == (int *) NULL) {
-		clnt_perror (clnt, "call failed");
-	}
-	result_2 = cin_1(&cin_1_arg, clnt);
-	if (result_2 == (int *) NULL) {
-		clnt_perror (clnt, "call failed");
-	}
+  result_1 = rexec_1(&rexec_1_arg, clnt);
+  if (result_1 == (int *) NULL) {
+    clnt_perror (clnt, "call failed");
+  }
+  result_2 = cin_1(&cin_1_arg, clnt);
+  if (result_2 == (int *) NULL) {
+    clnt_perror (clnt, "call failed");
+  }
 #ifndef	DEBUG
-	clnt_destroy (clnt);
+  clnt_destroy (clnt);
 #endif	 /* DEBUG */
 }
 
 
-int
-main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-	char *host;
+  if(argc < 3)
+    {
+      printf("usage: %s server_host command [arguments]\n",argv[0]);
+      exit(1);
+    }
 
-	if (argc < 2) {
-		printf ("usage: %s server_host\n", argv[0]);
-		exit (1);
+  int coutp[2];
+  int cerrp[2];
+  pipe(coutp);
+  pipe(cerrp);
+
+  int f = fork();
+  if(f)				/* parent */
+    {
+      struct pollfd fds[3];
+
+      close(coutp[1]);
+      close(cerrp[1]);
+
+      fds[0].fd = coutp[0];
+      fds[0].events = POLLIN;
+      fds[1].fd = cerrp[0];
+      fds[1].events = POLLIN;
+      fds[2].fd = 0;
+      fds[2].events = POLLIN;
+
+      while(1)
+	{
+	  char buff[4096];
+	  int ret = poll(fds,3,-1);
+	  printf("poll %d\n",ret);
+	  memset(buff,'\0',4096);
+	  if(fds[0].revents & POLLIN || fds[0].revents & POLLHUP) /* cout */
+	    {
+	      int rd = read(coutp[0],buff,4096);
+	      if(!rd)
+		break;
+	      printf(":cout:%s::\n",buff);
+	    }
+	  memset(buff,'\0',4096);
+	  if(fds[1].revents & POLLIN || fds[1].revents & POLLHUP) /* cerr */
+	    {
+	      int rd = read(cerrp[0],buff,4096);
+	      if(!rd)
+		break;
+	      printf(":cerr:%s::\n",buff);
+	    }
+	  memset(buff,'\0',4096);
+	  if(fds[2].revents & POLLIN || fds[2].revents & POLLHUP) /* cin */
+	    {
+	      read(0,buff,4096);
+	      printf(":cin:%s::\n",buff);
+	    }
 	}
-	host = argv[1];
-	remote_exec_1 (host);
-exit (0);
+
+      wait();
+    }
+  else				/* child */
+    {
+      dup2(coutp[1],1);
+      dup2(cerrp[1],2);
+      close(coutp[0]);
+      close(cerrp[0]);
+      execl("./callback_server","callback_server", (char * )0);
+    }
+
+  /* remote_exec_1 (host); */
+  return 0;
 }

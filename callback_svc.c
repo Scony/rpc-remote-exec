@@ -76,6 +76,9 @@ main (int argc, char **argv)
 {
 	register SVCXPRT *transp;
 
+	printf("line one\n");
+	printf("line two\n");
+
 	pmap_unset (CALLBACK, V1);
 
 	transp = svcudp_create(RPC_ANYSOCK);

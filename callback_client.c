@@ -127,8 +127,10 @@ int main(int argc, char * argv[])
 	    {
 	      int rd = read(coutp[0],buff,4096);
 	      if(!rd)
-		break;
-	      cout_callback(argv[1],buff);
+		/* break; */
+		;
+	      else
+		cout_callback(argv[1],buff);
 	    }
 	  memset(buff,'\0',4096);
 	  if(fds[1].revents & POLLIN || fds[1].revents & POLLHUP) /* cerr */

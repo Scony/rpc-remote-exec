@@ -117,10 +117,11 @@ int main(int argc, char * argv[])
       fds[2].fd = 0;
       fds[2].events = POLLIN;
 
+      int fdsc = 3;
       while(1)
 	{
 	  char buff[4096];
-	  poll(fds,3,-1);
+	  poll(fds,fdsc,-1);
 	  memset(buff,'\0',4096);
 	  if(fds[0].revents & POLLIN || fds[0].revents & POLLHUP) /* cout */
 	    {
@@ -141,6 +142,12 @@ int main(int argc, char * argv[])
 	  if(fds[2].revents & POLLIN || fds[2].revents & POLLHUP) /* cin */
 	    {
 	      int rd = read(0,buff,4096);
+	      if(!rd)
+		{
+		  close(cinp[1]);
+		  fdsc = 2;
+		  continue;
+		}
 	      write(cinp[1],buff,rd);
 	    }
 	}

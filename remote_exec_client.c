@@ -111,8 +111,7 @@ int main(int argc, char *argv[])
       while(1)
 	{
 	  char buff[4096];
-	  int ret = poll(fds,3,-1);
-	  /* printf("poll %d\n",ret); */
+	  poll(fds,3,-1);
 	  memset(buff,'\0',4096);
 	  if(fds[0].revents & POLLIN || fds[0].revents & POLLHUP) /* cout */
 	    {
@@ -140,7 +139,7 @@ int main(int argc, char *argv[])
       int s;
       wait(&s);
       if(WIFEXITED(s))
-	printf("Child's exit code %d\n", WEXITSTATUS(s));
+	return WEXITSTATUS(s);
       else
 	printf("Child did not terminate with exit\n");
     }

@@ -5,7 +5,7 @@
  */
 
 #include "callback.h"
-
+#include <poll.h>
 
 void cout_callback(char * host, char * data)
 {
@@ -27,7 +27,7 @@ void cout_callback(char * host, char * data)
   result = cout_1(&cout_1_arg, clnt);
   if(result == (int *)NULL)
     {
-      clnt_perror(clnt,"call failed");
+      clnt_perror(clnt,"cout_callback call failed");
     }
 
   clnt_destroy (clnt);
@@ -53,7 +53,7 @@ void cerr_callback(char * host, char * data)
   result = cerr_1(&cerr_1_arg, clnt);
   if(result == (int *)NULL)
     {
-      clnt_perror(clnt,"call failed");
+      clnt_perror(clnt,"cerr_callback call failed");
     }
 
   clnt_destroy (clnt);
@@ -77,7 +77,7 @@ void result_callback(char * host, int rslt)
   result = ret_1(&ret_1_arg, clnt);
   if(result == (int *)NULL)
     {
-      clnt_perror(clnt,"call failed");
+      clnt_perror(clnt,"result_callback call failed");
     }
 
   clnt_destroy (clnt);
@@ -94,8 +94,84 @@ int main(int argc, char * argv[])
       exit(1);
     }
 
-  cout_callback(argv[1],"cout test !\n");
-  cerr_callback(argv[1],"test cerr.\n");
-  result_callback(argv[1],5);
+  int cinp[2];
+  int coutp[2];
+  int cerrp[2];
+  pipe(cinp);
+  pipe(coutp);
+  pipe(cerrp);
+
+  int f = fork();
+  if(f)				/* parent */
+    {
+      struct pollfd fds[3];
+
+      close(cinp[0]);
+      close(coutp[1]);
+      close(cerrp[1]);
+
+      fds[0].fd = coutp[0];
+      fds[0].events = POLLIN;
+      fds[1].fd = cerrp[0];
+      fds[1].events = POLLIN;
+      fds[2].fd = 0;
+      fds[2].events = POLLIN;
+
+      while(1)
+	{
+	  char buff[4096];
+	  poll(fds,3,-1);
+	  memset(buff,'\0',4096);
+	  if(fds[0].revents & POLLIN || fds[0].revents & POLLHUP) /* cout */
+	    {
+	      int rd = read(coutp[0],buff,4096);
+	      if(!rd)
+		break;
+	      cout_callback(argv[1],buff);
+	    }
+	  memset(buff,'\0',4096);
+	  if(fds[1].revents & POLLIN || fds[1].revents & POLLHUP) /* cerr */
+	    {
+	      int rd = read(cerrp[0],buff,4096);
+	      if(!rd)
+		break;
+	      cerr_callback(argv[1],buff);
+	    }
+	  memset(buff,'\0',4096);
+	  if(fds[2].revents & POLLIN || fds[2].revents & POLLHUP) /* cin */
+	    {
+	      int rd = read(0,buff,4096);
+	      write(cinp[1],buff,rd);
+	    }
+	}
+
+      int s;
+      wait(&s);
+      if(WIFEXITED(s))
+	{
+	  printf("Child's exit code %d\n", WEXITSTATUS(s));
+	  result_callback(argv[1],WEXITSTATUS(s));
+	}
+      else
+	printf("Child did not terminate with exit\n");
+    }
+  else				/* child */
+    {
+      dup2(cinp[0],0);
+      dup2(coutp[1],1);
+      dup2(cerrp[1],2);
+      close(cinp[1]);
+      close(coutp[0]);
+      close(cerrp[0]);
+
+      int paramsc = argc - 1;	/* argc - 2 + 1 (for NULL) */
+      char * params[paramsc];
+      int i;
+      for(i = 0; i < paramsc - 1; i++)
+	params[i] = argv[i+2];
+      params[paramsc-1] = NULL;
+      execv(argv[2],params);
+    }
+
   return 0;
 }

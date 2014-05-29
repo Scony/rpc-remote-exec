@@ -15,7 +15,7 @@ int * rexec_1_svc(rexec_params * argp, struct svc_req * rqstp)
   wait();
   pipe(link);
 
-  if(!fork())			/* parent */
+  if(fork())			/* parent */
     {
       close(link[0]);
     }

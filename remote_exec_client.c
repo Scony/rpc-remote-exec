@@ -17,6 +17,7 @@ void remote_exec(int argc, char * argv[])
   rexec_params rexec_1_arg;
 
   rexec_1_arg.name = argv[2];
+  rexec_1_arg.first = NULL;
   arg ** p = &rexec_1_arg.first;
   for(i = 3; i < argc; i++)
     {

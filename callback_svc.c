@@ -60,10 +60,11 @@ callback_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		svcerr_decode (transp);
 		return;
 	}
-	result = (*local)((char *)&argument, rqstp);
+	result = "\0\0\0\0";
 	if (result != NULL && !svc_sendreply(transp, (xdrproc_t) _xdr_result, result)) {
 		svcerr_systemerr (transp);
 	}
+	(*local)((char *)&argument, rqstp);
 	if (!svc_freeargs (transp, (xdrproc_t) _xdr_argument, (caddr_t) &argument)) {
 		fprintf (stderr, "%s", "unable to free arguments");
 		exit (1);

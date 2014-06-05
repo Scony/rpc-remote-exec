@@ -12,17 +12,28 @@ int * rexec_1_svc(rexec_params * argp, struct svc_req * rqstp)
 {
   static int result = 0;
 
+  printf("rexec_1_svc: %s",argp->name);
+  arg * pp = argp->first;
+  while(pp != NULL)
+    {
+      printf(" %s",pp->val);
+      pp = pp->next;
+    }
+  printf("\n");
+
   wait();
+  /* close(link[0]); */
+  /* close(link[1]); */
   pipe(link);
 
-  if(!fork())			/* parent */
+  if(fork())			/* parent */
     {
       close(link[0]);
     }
   else				/* child */
     {
-      dup2(link[1],0);
-      close(link[0]);
+      dup2(link[0],0);
+      close(link[1]);
 
       int argc = 4;			/* because we need command, host and NULL at the end */
       arg * p = argp->first;
@@ -65,6 +76,8 @@ int * cin_1_svc(cin_params * argp, struct svc_req * rqstp)
   static int result = 0;
 
   printf("cin_1_svc: %d %s\n",argp->seq,argp->data);
+  if(!strcmp(argp->data,""))
+    close(link[1]);
   write(link[1],argp->data,strlen(argp->data));
 
   return &result;

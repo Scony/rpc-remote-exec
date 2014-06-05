@@ -5,6 +5,7 @@
  */
 
 #include "remote_exec.h"
+#include <arpa/inet.h>
 
 int link[2];
 
@@ -43,17 +44,10 @@ int * rexec_1_svc(rexec_params * argp, struct svc_req * rqstp)
   	  argc++;
   	}
 
-      SVCXPRT *transp = rqstp->rq_xprt; 
-      /* struct netbuf *caller = (struct netbuf *)(svc_getrpccaller(transp);  */
-      /* struct sockaddr_in *client_addr = (struct sockaddr_in *)(caller->buf);  */
-      /* char *client_netaddr=inet_ntoa(client_addr->sin_addr); */
-      /* printf("--->%s\n",client_addr); */
-      printf("--->%s\n",rqstp->rq_xprt->xp_raddr.sin_addr);
-
-
       char * argv[argc];
       argv[0] = "./callback_client";
-      argv[1] = "127.0.0.1";
+      argv[1] = inet_ntoa(rqstp->rq_xprt->xp_raddr.sin_addr);
+      /* argv[1] = "127.0.0.1"; */
       argv[2] = argp->name;
 
       p = argp->first;
